@@ -39,6 +39,8 @@ object Application extends IOApp.Simple {
     for {
       config <- IO.delay(ConfigSource.default.at("demo").loadOrThrow[AppConfig])
 
+      _ = println("ASDASDASDNASOFNASOFAOSFMAOSFNAOSFNASSF")
+
       httpClient <- SttpClient[IO, IO, Encoder, Decoder](ArmeriaCatsBackend[IO](), codec)
       given ZoneId = ZoneId.systemDefault()
       apiClient    = ApiClient[IO, Encoder, Decoder](httpClient, config.mattermost)(codec)
