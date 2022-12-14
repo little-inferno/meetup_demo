@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17.0.5_8-jdk as stage0
 LABEL snp-multi-stage="intermediate"
-LABEL snp-multi-stage-id="f65061c1-5352-4692-bf1d-03bed19981cc"
+LABEL snp-multi-stage-id="1601e3cb-8ed9-45b0-8393-82fe4d2420bb"
 WORKDIR /opt/docker
 COPY 2/opt /2/opt
 COPY 4/opt /4/opt
