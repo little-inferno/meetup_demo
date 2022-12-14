@@ -1,6 +1,6 @@
-FROM openjdk:8 as stage0
+FROM eclipse-temurin:17.0.5_8-jdk as stage0
 LABEL snp-multi-stage="intermediate"
-LABEL snp-multi-stage-id="26ded773-f51d-429e-93e4-e2083c008a40"
+LABEL snp-multi-stage-id="3628c23e-50e3-4671-bcf4-708964ba689f"
 WORKDIR /opt/docker
 COPY 2/opt /2/opt
 COPY 4/opt /4/opt
@@ -9,7 +9,7 @@ RUN ["chmod", "-R", "u=rX,g=rX", "/2/opt/docker"]
 RUN ["chmod", "-R", "u=rX,g=rX", "/4/opt/docker"]
 RUN ["chmod", "u+x,g+x", "/4/opt/docker/bin/meetup_demo"]
 
-FROM openjdk:8 as mainstage
+FROM eclipse-temurin:17.0.5_8-jdk as mainstage
 USER root
 RUN id -u demiourgos728 1>/dev/null 2>&1 || (( getent group 0 1>/dev/null 2>&1 || ( type groupadd 1>/dev/null 2>&1 && groupadd -g 0 root || addgroup -g 0 -S root )) && ( type useradd 1>/dev/null 2>&1 && useradd --system --create-home --uid 1001 --gid 0 demiourgos728 || adduser -S -u 1001 -G root demiourgos728 ))
 WORKDIR /opt/docker
