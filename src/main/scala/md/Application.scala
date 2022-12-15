@@ -16,11 +16,15 @@ import muffin.dsl.*
 import java.time.ZoneId
 import org.http4s.ember.server.*
 import org.http4s.server.Router
+import org.http4s.HttpRoutes
 import pureconfig.*
 import pureconfig.ConfigReader
 import pureconfig.generic.derivation.default.*
 import com.comcast.ip4s.Port
-import muffin.model.ChannelId
+import muffin.model.{ChannelId, CommandAction, DialogAction, MessageAction}
+import muffin.router.{HttpAction, HttpResponse}
+import org.http4s.dsl.io.*
+import org.slf4j.LoggerFactory
 
 case class DatabaseConfig(
   url: String,
@@ -39,28 +43,31 @@ object Application extends IOApp.Simple {
     for {
       config <- IO.delay(ConfigSource.default.at("demo").loadOrThrow[AppConfig])
 
-      _ = println("ASDASDASDNASOFNASOFAOSFMAOSFNAOSFNASSF")
-
       httpClient <- SttpClient[IO, IO, Encoder, Decoder](ArmeriaCatsBackend[IO](), codec)
       given ZoneId = ZoneId.systemDefault()
       apiClient    = ApiClient[IO, Encoder, Decoder](httpClient, config.mattermost)(codec)
 
-      transactor = Transactor.fromDriverManager[IO]("", config.database.url, config.database.user, config.database.password)
+      repository = StatisticRepo.Live[IO](Transactor.fromDriverManager[IO]("org.postgresql.Driver", config.database.url, config.database.user, config.database.password))
+      handler = DemoHandler.Live[IO](apiClient, repository)
 
-      repository = StatisticRepo.Live[IO](transactor)
-      handler = SlashComand.Live[IO](apiClient, repository)
-
-      _ <- apiClient.postToChannel(ChannelId("dj8iazhshfdjinibqg1w5pbena"), Some("super kek"))
-
-      router <- handle(handler, "handler")
-        .command(_.menu)
+      router: muffin.router.Router[IO] <- handle(handler, "handler")
+        .command(_.vote)
+        .command(_.stats)
+        .dialog(_.dialog)
         .in[IO, IO]()
 
       _ <- EmberServerBuilder
         .default[IO]
         .withHost(ipv4"0.0.0.0")
         .withPort(Port.fromInt(config.port).get)
-        .withHttpApp(Router("/" -> Http4sRoute.routes[IO, Encoder, Decoder](router, codec)).orNotFound)
+        .withHttpApp(
+          Router("/" -> Http4sRoute.routes[IO, Encoder, Decoder](router, codec),
+                 "/" -> HttpRoutes.of[IO] {
+                          case GET -> Root / "healthz" =>
+                            Ok (s"servis started")
+                        }
+          ).orNotFound
+        )
         .build
         .use(_ => IO.never)
         .as(ExitCode.Success)

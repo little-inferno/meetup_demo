@@ -5,6 +5,8 @@ ThisBuild / scalaVersion := "3.2.1"
 lazy val root = (project in file("."))
   .settings(
     name := "meetup_demo",
+    dockerBaseImage := "eclipse-temurin:17.0.5_8-jdk",
+    
     libraryDependencies += "ru.tinkoff" %% "muffin-sttp-http-interop" % "0.2.1",
     libraryDependencies += "ru.tinkoff" %% "muffin-circe-json-interop" % "0.2.1",
     libraryDependencies += "ru.tinkoff" %% "muffin-http4s-http-interop" % "0.2.1",
